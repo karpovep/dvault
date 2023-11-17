@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"dazer/middleware"
 	"dazer/models"
 	"dazer/services"
 	"encoding/base64"
@@ -140,6 +141,14 @@ func (nc *NoteController) ProtectedTest(ctx *gin.Context) {
 	})
 }
 
+func (nc *NoteController) ProtectedTestMiddleware(ctx *gin.Context) {
+	claims, _ := ctx.Get("claims")
+	fmt.Println("ProtectedTestMiddleware", claims)
+	ctx.JSON(http.StatusOK, gin.H{
+		"payload": claims,
+	})
+}
+
 func (nc *NoteController) RegisterNoteRoutes(rg *gin.RouterGroup) {
 	noteRoute := rg.Group("/note")
 	noteRoute.POST("/create", nc.CreateNote)
@@ -150,4 +159,6 @@ func (nc *NoteController) RegisterNoteRoutes(rg *gin.RouterGroup) {
 
 	protected := rg.Group("/protected")
 	protected.GET("/test", nc.ProtectedTest)
+	protected.Use(middleware.JwtAuthMiddleware())
+	protected.GET("/test-middleware", nc.ProtectedTestMiddleware)
 }
