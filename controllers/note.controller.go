@@ -29,11 +29,13 @@ func New(noteService services.NoteService) NoteController {
 }
 
 func (nc *NoteController) CreateNote(ctx *gin.Context) {
+	claims := middleware.GetAuthClaims(ctx)
 	var note models.Note
 	if err := ctx.ShouldBindJSON(&note); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
+	note.UserID = claims.UserId
 	err := nc.NoteService.CreateNote(&note)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -53,7 +55,8 @@ func (nc *NoteController) GetNote(ctx *gin.Context) {
 }
 
 func (nc *NoteController) GetAll(ctx *gin.Context) {
-	notes, err := nc.NoteService.GetAll()
+	claims := middleware.GetAuthClaims(ctx)
+	notes, err := nc.NoteService.GetAll(claims.UserId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
@@ -219,5 +222,7 @@ func (nc *NoteController) RegisterNoteRoutes(rg *gin.RouterGroup) {
 	protected.GET("/test", nc.ProtectedTest)
 	protected.GET("/test-new", nc.ProtectedTestNew) //supports signature verification from Vue app
 	protected.Use(middleware.JwtAuthMiddleware())
+	protected.POST("/create", nc.CreateNote)
+	protected.GET("/getall", nc.GetAll)
 	protected.GET("/test-middleware", nc.ProtectedTestMiddleware)
 }

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
@@ -10,10 +11,19 @@ import (
 	"strings"
 )
 
-type CustomClaims struct {
+type AuthClaims struct {
 	jwt.RegisteredClaims
-	Timestamp int
-	UserId    string
+	UserId    string `json:"userId"`
+	Timestamp int    `json:"timestamp"`
+}
+
+func GetAuthClaims(ctx *gin.Context) *AuthClaims {
+	rawClaims, _ := ctx.Get("claims")
+	claims, ok := rawClaims.(*AuthClaims)
+	if !ok {
+		return nil
+	}
+	return claims
 }
 
 func JwtAuthMiddleware() gin.HandlerFunc {
@@ -29,21 +39,21 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 		fmt.Println(token)
 		jwtParser := jwt.NewParser(jwt.WithoutClaimsValidation())
 
-		claims := &CustomClaims{}
+		claims := &AuthClaims{}
 		parsed, parts, err := jwtParser.ParseUnverified(token, claims)
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
+			ctx.Abort()
+			return
+		}
 
+		signature, err := hex.DecodeString(parts[2])
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
 			ctx.Abort()
 			return
 		}
-		signature, err := base64.RawURLEncoding.DecodeString(parts[2])
-		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
-			ctx.Abort()
-			return
-		}
-		publicKeyBytes, err := base64.RawURLEncoding.DecodeString(claims.UserId)
+		publicKeyBytes, err := hex.DecodeString(claims.UserId)
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
 			ctx.Abort()
@@ -55,7 +65,6 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
-		fmt.Println(string(data))
 		hash := crypto.Keccak256Hash(data)
 
 		signatureNoRecoverID := signature[:len(signature)-1] // remove recovery ID

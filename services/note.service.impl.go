@@ -26,6 +26,7 @@ func (n *NoteServiceImpl) CreateNote(note *models.Note) error {
 		ID:      primitive.NewObjectID(),
 		Title:   note.Title,
 		Content: note.Content,
+		UserID:  note.UserID,
 	}
 	_, err := n.noteCollection.InsertOne(n.Ctx, toInsert)
 	return err
@@ -42,9 +43,9 @@ func (n *NoteServiceImpl) GetNote(id string) (*models.Note, error) {
 	return note, err
 }
 
-func (n *NoteServiceImpl) GetAll() ([]*models.Note, error) {
+func (n *NoteServiceImpl) GetAll(userId string) ([]*models.Note, error) {
 	var notes []*models.Note
-	cursor, err := n.noteCollection.Find(n.Ctx, bson.D{})
+	cursor, err := n.noteCollection.Find(n.Ctx, bson.D{bson.E{Key: "user_id", Value: userId}})
 	if err != nil {
 		return nil, err
 	}
