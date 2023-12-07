@@ -18,8 +18,11 @@ var (
 	server          *gin.Engine
 	notesService    services.NoteService
 	notesController controllers.NoteController
+	userService     services.UserService
+	userController  controllers.UserController
 	ctx             context.Context
 	noteCollection  *mongo.Collection
+	userCollection  *mongo.Collection
 	mongoClient     *mongo.Client
 	err             error
 )
@@ -46,7 +49,10 @@ func init() {
 
 	noteCollection = mongoClient.Database("dazer").Collection("notes")
 	notesService = services.NewNoteService(noteCollection, ctx)
-	notesController = controllers.New(notesService)
+	notesController = controllers.NewNoteController(notesService)
+	userCollection = mongoClient.Database("dazer").Collection("users")
+	userService = services.NewUserService(userCollection, ctx)
+	userController = controllers.NewUserController(userService)
 	server = gin.Default()
 }
 
@@ -55,6 +61,7 @@ func main() {
 
 	basepath := server.Group("/v1")
 	notesController.RegisterNoteRoutes(basepath)
+	userController.RegisterUserRoutes(basepath)
 
 	log.Fatal(server.Run(cfg.Server.Port))
 }

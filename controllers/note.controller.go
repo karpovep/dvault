@@ -19,7 +19,7 @@ type NoteController struct {
 	NoteService services.NoteService
 }
 
-func New(noteService services.NoteService) NoteController {
+func NewNoteController(noteService services.NoteService) NoteController {
 	return NoteController{NoteService: noteService}
 }
 
