@@ -65,6 +65,8 @@ func (nc *NoteController) UpdateNote(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
+	claims := middleware.GetAuthClaims(ctx)
+	note.UserID = claims.UserId
 	err := nc.NoteService.UpdateNote(&note)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -75,7 +77,17 @@ func (nc *NoteController) UpdateNote(ctx *gin.Context) {
 
 func (nc *NoteController) DeleteNote(ctx *gin.Context) {
 	noteId := ctx.Param("id")
-	err := nc.NoteService.DeleteNote(noteId)
+	note, err := nc.NoteService.GetNote(noteId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+	claims := middleware.GetAuthClaims(ctx)
+	if note.UserID != claims.UserId {
+		ctx.JSON(http.StatusForbidden, gin.H{"message": "not allowed"})
+		return
+	}
+	err = nc.NoteService.DeleteNote(noteId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
@@ -84,16 +96,10 @@ func (nc *NoteController) DeleteNote(ctx *gin.Context) {
 }
 
 func (nc *NoteController) RegisterNoteRoutes(rg *gin.RouterGroup) {
-	noteRoute := rg.Group("/note")
-	noteRoute.POST("/create", nc.CreateNote)
-	noteRoute.GET("/get/:id", nc.GetNote)
-	noteRoute.GET("/getall", nc.GetAll)
-	noteRoute.PATCH("/update", nc.UpdateNote)
-	noteRoute.DELETE("/delete/:id", nc.DeleteNote)
-
-	//supports signature verification from Vue app
-	protected := rg.Group("/protected")
+	protected := rg.Group("/notes")
 	protected.Use(middleware.JwtAuthMiddleware())
 	protected.POST("/create", nc.CreateNote)
 	protected.GET("/getall", nc.GetAll)
+	protected.PATCH("/update", nc.UpdateNote)
+	protected.DELETE("/delete/:id", nc.DeleteNote)
 }

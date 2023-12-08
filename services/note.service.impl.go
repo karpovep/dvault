@@ -72,7 +72,8 @@ func (n *NoteServiceImpl) UpdateNote(note *models.Note) error {
 	update := bson.D{
 		bson.E{Key: "$set", Value: bson.D{
 			bson.E{Key: "title", Value: note.Title},
-			bson.E{Key: "content", Value: note.Content}},
+			bson.E{Key: "content", Value: note.Content},
+			bson.E{Key: "user_id", Value: note.UserID}},
 		}}
 	result, err := n.noteCollection.UpdateOne(n.Ctx, filter, update)
 	if err != nil {
