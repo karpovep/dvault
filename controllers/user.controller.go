@@ -4,7 +4,6 @@ import (
 	"dazer/middleware"
 	"dazer/models"
 	"dazer/services"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -20,9 +19,18 @@ func NewUserController(userService services.UserService) UserController {
 
 func (c *UserController) CreateUser(ctx *gin.Context) {
 	claims := middleware.GetAuthClaims(ctx)
+	existingUser, err := c.UserService.GetUser(claims.UserId)
+	if err != nil && !strings.Contains(err.Error(), "no documents") {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+	if existingUser != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "user already exists"})
+		return
+	}
 	var user models.User
 	user.UserID = claims.UserId
-	err := c.UserService.CreateUser(&user)
+	err = c.UserService.CreateUser(&user)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
@@ -33,8 +41,6 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 func (c *UserController) GetUser(ctx *gin.Context) {
 	claims := middleware.GetAuthClaims(ctx)
 	user, err := c.UserService.GetUser(claims.UserId)
-	fmt.Println(user)
-	fmt.Println(err)
 	if err != nil {
 		if strings.Contains(err.Error(), "no documents") {
 			ctx.JSON(http.StatusNotFound, gin.H{"message": "user has not registered yet"})
