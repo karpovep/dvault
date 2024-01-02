@@ -6,6 +6,7 @@ import (
 	"dvault/controllers"
 	"dvault/logger"
 	"dvault/services"
+	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -38,7 +39,8 @@ func init() {
 
 	ctx := context.TODO()
 
-	mongoconn := options.Client().ApplyURI("mongodb://root:example@localhost:27017")
+	uri := fmt.Sprintf("mongodb://%s:%s@%s:%s", cfg.Db.User, cfg.Db.Pass, cfg.Db.Host, cfg.Db.Port)
+	mongoconn := options.Client().ApplyURI(uri)
 	mongoClient, err = mongo.Connect(ctx, mongoconn)
 	if err != nil {
 		log.Fatal(err)
@@ -49,10 +51,10 @@ func init() {
 	}
 	log.Info("mongo connection established")
 
-	noteCollection = mongoClient.Database("dvault").Collection("notes")
+	noteCollection = mongoClient.Database(cfg.Db.Name).Collection("notes")
 	notesService = services.NewNoteService(noteCollection, ctx)
 	notesController = controllers.NewNoteController(notesService)
-	userCollection = mongoClient.Database("dvault").Collection("users")
+	userCollection = mongoClient.Database(cfg.Db.Name).Collection("users")
 	userService = services.NewUserService(userCollection, ctx)
 	userController = controllers.NewUserController(userService)
 	server = gin.Default()

@@ -2,3 +2,9 @@ logger:
   level: debug
 server:
   port: :9090
+db:
+  host: localhost
+  port: 27017
+  user: root
+  pass: example
+  name: dvault
