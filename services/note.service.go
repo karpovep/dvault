@@ -1,6 +1,6 @@
 package services
 
-import "dazer/models"
+import "dvault/models"
 
 type NoteService interface {
 	CreateNote(note *models.Note) error

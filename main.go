@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"dazer/config"
-	"dazer/controllers"
-	"dazer/logger"
-	"dazer/services"
+	"dvault/config"
+	"dvault/controllers"
+	"dvault/logger"
+	"dvault/services"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -38,7 +38,7 @@ func init() {
 
 	ctx := context.TODO()
 
-	mongoconn := options.Client().ApplyURI("mongodb://localhost:27017")
+	mongoconn := options.Client().ApplyURI("mongodb://root:example@localhost:27017")
 	mongoClient, err = mongo.Connect(ctx, mongoconn)
 	if err != nil {
 		log.Fatal(err)
@@ -49,10 +49,10 @@ func init() {
 	}
 	log.Info("mongo connection established")
 
-	noteCollection = mongoClient.Database("dazer").Collection("notes")
+	noteCollection = mongoClient.Database("dvault").Collection("notes")
 	notesService = services.NewNoteService(noteCollection, ctx)
 	notesController = controllers.NewNoteController(notesService)
-	userCollection = mongoClient.Database("dazer").Collection("users")
+	userCollection = mongoClient.Database("dvault").Collection("users")
 	userService = services.NewUserService(userCollection, ctx)
 	userController = controllers.NewUserController(userService)
 	server = gin.Default()

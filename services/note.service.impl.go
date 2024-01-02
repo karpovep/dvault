@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"dazer/models"
+	"dvault/models"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

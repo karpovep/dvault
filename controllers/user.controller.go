@@ -1,9 +1,10 @@
 package controllers
 
 import (
-	"dazer/middleware"
-	"dazer/models"
-	"dazer/services"
+	"dvault/middleware"
+	"dvault/models"
+	"dvault/services"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -24,7 +25,9 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
-	if existingUser != nil {
+	fmt.Println(err)
+	if existingUser != nil && !existingUser.ID.IsZero() {
+		fmt.Println(existingUser)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "user already exists"})
 		return
 	}

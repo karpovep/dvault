@@ -1,6 +1,6 @@
 package services
 
-import "dazer/models"
+import "dvault/models"
 
 type UserService interface {
 	CreateUser(user *models.User) error

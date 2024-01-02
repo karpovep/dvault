@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"dazer/config"
+	"dvault/config"
 	log "github.com/sirupsen/logrus"
 )
 

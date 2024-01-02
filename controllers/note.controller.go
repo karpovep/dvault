@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"dazer/middleware"
-	"dazer/models"
-	"dazer/services"
+	"dvault/middleware"
+	"dvault/models"
+	"dvault/services"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
