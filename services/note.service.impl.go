@@ -21,7 +21,7 @@ func NewNoteService(collection *mongo.Collection, ctx context.Context) NoteServi
 	}
 }
 
-func (n *NoteServiceImpl) CreateNote(note *models.Note) error {
+func (n *NoteServiceImpl) CreateNote(note *models.Note) (*models.Note, error) {
 	toInsert := &models.Note{
 		ID:      primitive.NewObjectID(),
 		Title:   note.Title,
@@ -29,7 +29,7 @@ func (n *NoteServiceImpl) CreateNote(note *models.Note) error {
 		UserID:  note.UserID,
 	}
 	_, err := n.noteCollection.InsertOne(n.Ctx, toInsert)
-	return err
+	return toInsert, err
 }
 
 func (n *NoteServiceImpl) GetNote(id string) (*models.Note, error) {
@@ -67,7 +67,7 @@ func (n *NoteServiceImpl) GetAll(userId string) ([]*models.Note, error) {
 	return notes, nil
 }
 
-func (n *NoteServiceImpl) UpdateNote(note *models.Note) error {
+func (n *NoteServiceImpl) UpdateNote(note *models.Note) (*models.Note, error) {
 	filter := bson.D{bson.E{Key: "_id", Value: note.ID}}
 	update := bson.D{
 		bson.E{Key: "$set", Value: bson.D{
@@ -77,12 +77,12 @@ func (n *NoteServiceImpl) UpdateNote(note *models.Note) error {
 		}}
 	result, err := n.noteCollection.UpdateOne(n.Ctx, filter, update)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if result.MatchedCount != 1 {
-		return errors.New("no docs were found")
+		return nil, errors.New("no docs were found")
 	}
-	return nil
+	return note, err
 }
 
 func (n *NoteServiceImpl) DeleteNote(id string) error {

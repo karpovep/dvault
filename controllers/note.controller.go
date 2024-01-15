@@ -31,12 +31,12 @@ func (nc *NoteController) CreateNote(ctx *gin.Context) {
 		return
 	}
 	note.UserID = claims.UserId
-	err := nc.NoteService.CreateNote(&note)
+	created, err := nc.NoteService.CreateNote(&note)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "success"})
+	ctx.JSON(http.StatusOK, created)
 }
 
 func (nc *NoteController) GetNote(ctx *gin.Context) {
@@ -67,12 +67,12 @@ func (nc *NoteController) UpdateNote(ctx *gin.Context) {
 	}
 	claims := middleware.GetAuthClaims(ctx)
 	note.UserID = claims.UserId
-	err := nc.NoteService.UpdateNote(&note)
+	updated, err := nc.NoteService.UpdateNote(&note)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "success"})
+	ctx.JSON(http.StatusOK, updated)
 }
 
 func (nc *NoteController) DeleteNote(ctx *gin.Context) {
