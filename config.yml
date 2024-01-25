@@ -8,3 +8,10 @@ db:
   user: root
   pass: example
   name: dvault
+postgres:
+  host: localhost
+  port: 5432
+  user: postgres
+  pass: postgres
+  name: dvault
+  auto_migrate: true

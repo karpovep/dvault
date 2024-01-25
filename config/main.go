@@ -22,10 +22,20 @@ type (
 		Pass string `yaml:"pass" env:"DB_PASS" env-default:"example"`
 	}
 
+	PostgresConfig struct {
+		Host        string `yaml:"host" env:"DB_HOST" env-default:"localhost"`
+		Port        string `yaml:"port" env:"DB_POST" env-default:"5432"`
+		Name        string `yaml:"name" env:"DB_NAME" env-default:"dvault"`
+		User        string `yaml:"user" env:"DB_USER" env-default:"postgres"`
+		Pass        string `yaml:"pass" env:"DB_PASS" env-default:"postgres"`
+		AutoMigrate bool   `yaml:"auto_migrate" env:"DB_AUTO_MIGRATE" env-default:"true"`
+	}
+
 	Config struct {
-		Logger LoggerConfig `yaml:"logger"`
-		Server ServerConfig `yaml:"server"`
-		Db     DbConfig     `yaml:"db"`
+		Logger   LoggerConfig   `yaml:"logger"`
+		Server   ServerConfig   `yaml:"server"`
+		Db       DbConfig       `yaml:"db"`
+		Postgres PostgresConfig `yaml:"postgres"`
 	}
 )
 

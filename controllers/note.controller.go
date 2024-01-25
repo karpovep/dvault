@@ -30,7 +30,7 @@ func (nc *NoteController) CreateNote(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-	note.UserID = claims.UserId
+	note.UserID = claims.UserPubId
 	created, err := nc.NoteService.CreateNote(&note)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -51,7 +51,7 @@ func (nc *NoteController) GetNote(ctx *gin.Context) {
 
 func (nc *NoteController) GetAll(ctx *gin.Context) {
 	claims := middleware.GetAuthClaims(ctx)
-	notes, err := nc.NoteService.GetAll(claims.UserId)
+	notes, err := nc.NoteService.GetAll(claims.UserPubId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
@@ -66,7 +66,7 @@ func (nc *NoteController) UpdateNote(ctx *gin.Context) {
 		return
 	}
 	claims := middleware.GetAuthClaims(ctx)
-	note.UserID = claims.UserId
+	note.UserID = claims.UserPubId
 	updated, err := nc.NoteService.UpdateNote(&note)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -83,7 +83,7 @@ func (nc *NoteController) DeleteNote(ctx *gin.Context) {
 		return
 	}
 	claims := middleware.GetAuthClaims(ctx)
-	if note.UserID != claims.UserId {
+	if note.UserID != claims.UserPubId {
 		ctx.JSON(http.StatusForbidden, gin.H{"message": "not allowed"})
 		return
 	}

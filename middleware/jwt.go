@@ -13,7 +13,7 @@ import (
 
 type AuthClaims struct {
 	jwt.RegisteredClaims
-	UserId    string `json:"userId"`
+	UserPubId string `json:"userId"`
 	Timestamp int    `json:"timestamp"`
 }
 
@@ -53,7 +53,7 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
-		publicKeyBytes, err := hex.DecodeString(claims.UserId)
+		publicKeyBytes, err := hex.DecodeString(claims.UserPubId)
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
 			ctx.Abort()

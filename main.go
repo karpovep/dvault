@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"dvault/app"
 	"dvault/config"
+	"dvault/constants"
 	"dvault/controllers"
+	"dvault/db"
 	"dvault/logger"
 	"dvault/services"
 	"fmt"
@@ -21,11 +24,10 @@ var (
 	server          *gin.Engine
 	notesService    services.NoteService
 	notesController controllers.NoteController
-	userService     services.UserService
+	userService     services.IUserService
 	userController  controllers.UserController
 	ctx             context.Context
 	noteCollection  *mongo.Collection
-	userCollection  *mongo.Collection
 	mongoClient     *mongo.Client
 	err             error
 )
@@ -37,7 +39,17 @@ func init() {
 	// start the app
 	log.Info("Starting the app...")
 
+	appContext := app.NewApplicationContext()
 	ctx := context.TODO()
+	appContext.Set(constants.Ctx, ctx)
+	appContext.Set(constants.AppConfig, cfg)
+	_, err = db.Init(appContext)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	userService = services.NewUserService(appContext)
+	appContext.Set(constants.UserService, userService)
 
 	uri := fmt.Sprintf("mongodb://%s:%s@%s:%s", cfg.Db.User, cfg.Db.Pass, cfg.Db.Host, cfg.Db.Port)
 	mongoconn := options.Client().ApplyURI(uri)
@@ -54,9 +66,7 @@ func init() {
 	noteCollection = mongoClient.Database(cfg.Db.Name).Collection("notes")
 	notesService = services.NewNoteService(noteCollection, ctx)
 	notesController = controllers.NewNoteController(notesService)
-	userCollection = mongoClient.Database(cfg.Db.Name).Collection("users")
-	userService = services.NewUserService(userCollection, ctx)
-	userController = controllers.NewUserController(userService)
+	userController = controllers.NewUserController(appContext)
 	server = gin.Default()
 	server.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
